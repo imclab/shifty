@@ -156,7 +156,7 @@ var Tweenable = (function () {
     });
   }
 
-  var timeoutHandlerFilterList = [];
+  var timeoutHandler_filterList = [];
   /*!
    * Handles the update logic for one step of a tween.
    * @param {Tweenable} tweenable
@@ -180,16 +180,16 @@ var Tweenable = (function () {
           originalState, targetState, easing, step);
       }, UPDATE_TIME);
 
-      timeoutHandlerFilterList.length = 0;
-      timeoutHandlerFilterList.push(currentState);
-      timeoutHandlerFilterList.push(originalState);
-      timeoutHandlerFilterList.push(targetState);
-      timeoutHandlerFilterList.push(easing);
+      timeoutHandler_filterList.length = 0;
+      timeoutHandler_filterList.push(currentState);
+      timeoutHandler_filterList.push(originalState);
+      timeoutHandler_filterList.push(targetState);
+      timeoutHandler_filterList.push(easing);
 
-      applyFilter(tweenable, 'beforeTween', timeoutHandlerFilterList);
+      applyFilter(tweenable, 'beforeTween', timeoutHandler_filterList);
       tweenProps(currentTime, currentState, originalState, targetState,
           duration, timestamp, easing);
-      applyFilter(tweenable, 'afterTween', timeoutHandlerFilterList);
+      applyFilter(tweenable, 'afterTween', timeoutHandler_filterList);
 
       step(currentState);
     } else if (isEnded) {

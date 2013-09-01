@@ -1,4 +1,4 @@
-/*! shifty - v0.10.1 - 2013-08-28 - http://jeremyckahn.github.io/shifty */
+/*! shifty - v0.10.2 - 2013-08-31 - http://jeremyckahn.github.io/shifty */
 ;(function (root) {
 
 /*!
@@ -22,9 +22,13 @@ var Tweenable = (function () {
   var DEFAULT_DURATION = 500;
   var UPDATE_TIME = 1000 / 60;
 
+  var _now = Date.now
+      ? Date.now
+      : function () { return +new Date(); };
+
   var now = SHIFTY_DEBUG_NOW
       ? SHIFTY_DEBUG_NOW
-      : function () { return +new Date(); };
+      : _now;
 
   var schedule = (function getUpdateMethod () {
     var updateMethod;
@@ -116,8 +120,7 @@ var Tweenable = (function () {
 
     var prop;
     for (prop in currentState) {
-      if (currentState.hasOwnProperty(prop)
-          && targetState.hasOwnProperty(prop)) {
+      if (currentState.hasOwnProperty(prop)) {
           currentState[prop] = tweenProp(originalState[prop],
               targetState[prop], formula[easing[prop]], normalizedPosition);
       }
@@ -156,6 +159,7 @@ var Tweenable = (function () {
     });
   }
 
+  var timeoutHandler_filterList = [];
   /*!
    * Handles the update logic for one step of a tween.
    * @param {Tweenable} tweenable
@@ -179,12 +183,16 @@ var Tweenable = (function () {
           originalState, targetState, easing, step);
       }, UPDATE_TIME);
 
-      applyFilter(tweenable, 'beforeTween',
-          [currentState, originalState, targetState, easing]);
+      timeoutHandler_filterList.length = 0;
+      timeoutHandler_filterList.push(currentState);
+      timeoutHandler_filterList.push(originalState);
+      timeoutHandler_filterList.push(targetState);
+      timeoutHandler_filterList.push(easing);
+
+      applyFilter(tweenable, 'beforeTween', timeoutHandler_filterList);
       tweenProps(currentTime, currentState, originalState, targetState,
           duration, timestamp, easing);
-      applyFilter(tweenable, 'afterTween',
-          [currentState, originalState, targetState, easing]);
+      applyFilter(tweenable, 'afterTween', timeoutHandler_filterList);
 
       step(currentState);
     } else if (isEnded) {
@@ -889,6 +897,7 @@ var Tweenable = (function () {
 
   // HELPERS
 
+  var getFormatChunksFrom_accumulator = [];
   /*!
    * @param {Array.number} rawValues
    * @param {string} prefix
@@ -896,14 +905,16 @@ var Tweenable = (function () {
    * @return {Array.<string>}
    */
   function getFormatChunksFrom (rawValues, prefix) {
+    getFormatChunksFrom_accumulator.length = 0;
+
     var rawValuesLength = rawValues.length;
-    var i, chunkAccumulator = [];
+    var i;
 
     for (i = 0; i < rawValuesLength; i++) {
-      chunkAccumulator.push('_' + prefix + '_' + i);
+      getFormatChunksFrom_accumulator.push('_' + prefix + '_' + i);
     }
 
-    return chunkAccumulator;
+    return getFormatChunksFrom_accumulator;
   }
 
 
@@ -962,6 +973,7 @@ var Tweenable = (function () {
   }
 
 
+  var hexToRGBArray_returnArray = [];
   /*!
    * Convert a hexadecimal string to an array with three items, one each for
    * the red, blue, and green decimal values.
@@ -982,8 +994,11 @@ var Tweenable = (function () {
       hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
 
-    return [hexToDec(hex.substr(0, 2)), hexToDec(hex.substr(2, 2)),
-           hexToDec(hex.substr(4, 2))];
+    hexToRGBArray_returnArray[0] = hexToDec(hex.substr(0, 2));
+    hexToRGBArray_returnArray[1] = hexToDec(hex.substr(2, 2));
+    hexToRGBArray_returnArray[2] = hexToDec(hex.substr(4, 2));
+
+    return hexToRGBArray_returnArray;
   }
 
 
@@ -1142,6 +1157,7 @@ var Tweenable = (function () {
   }
 
 
+  var getValuesList_accumulator = [];
   /*!
    * @param {Object} stateObject
    * @param {Array.<string>} chunkNames
@@ -1149,14 +1165,14 @@ var Tweenable = (function () {
    * @return {Array.<number>}
    */
   function getValuesList (stateObject, chunkNames) {
-    var valueAccumulator = [];
+    getValuesList_accumulator.length = 0;
     var chunkNamesLength = chunkNames.length;
 
     for (var i = 0; i < chunkNamesLength; i++) {
-      valueAccumulator.push(stateObject[chunkNames[i]]);
+      getValuesList_accumulator.push(stateObject[chunkNames[i]]);
     }
 
-    return valueAccumulator;
+    return getValuesList_accumulator;
   }
 
 
@@ -1229,8 +1245,7 @@ var Tweenable = (function () {
         delete easingObject[chunkNames[i]];
       }
 
-      composedEasingString = composedEasingString.substr(1);
-      easingObject[prop] = composedEasingString;
+      easingObject[prop] = composedEasingString.substr(1);
     });
   }
 
