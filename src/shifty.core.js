@@ -19,9 +19,13 @@ var Tweenable = (function () {
   var DEFAULT_DURATION = 500;
   var UPDATE_TIME = 1000 / 60;
 
+  var _now = Date.now
+      ? Date.now
+      : function () { return +new Date(); };
+
   var now = SHIFTY_DEBUG_NOW
       ? SHIFTY_DEBUG_NOW
-      : function () { return +new Date(); };
+      : _now;
 
   var schedule = (function getUpdateMethod () {
     var updateMethod;
@@ -113,8 +117,7 @@ var Tweenable = (function () {
 
     var prop;
     for (prop in currentState) {
-      if (currentState.hasOwnProperty(prop)
-          && targetState.hasOwnProperty(prop)) {
+      if (currentState.hasOwnProperty(prop)) {
           currentState[prop] = tweenProp(originalState[prop],
               targetState[prop], formula[easing[prop]], normalizedPosition);
       }
